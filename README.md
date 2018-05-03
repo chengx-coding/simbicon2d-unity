@@ -18,3 +18,5 @@ Press "z" and "x" to add torque to letf ankle joint
 Press "[" and "]" to add torque to right hip joint
 Press ";" and "'" to add torque to right knee joint
 Press "." and "/" to add torque to right ankle joint
+
+
