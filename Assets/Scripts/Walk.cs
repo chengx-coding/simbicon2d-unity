@@ -48,21 +48,20 @@ public class Walk : MonoBehaviour
 
         motion.targetVelocity = 1f;
 
-        motion.minAngle[0] = -Mathf.PI * 0.5f; //torso
-        motion.maxAngle[0] = Mathf.PI * 0.5f;
-        motion.minAngle[1] = -Mathf.PI * 0.5f; //right hip
-        motion.maxAngle[1] = Mathf.PI * 0.5f;
-        motion.minAngle[2] = -Mathf.PI * 0.5f; //left hip
-        motion.maxAngle[2] = Mathf.PI * 0.5f;
-        motion.minAngle[3] = -Mathf.PI + 0.05f; //right knee
-        motion.maxAngle[3] = -0.00f;
-        motion.minAngle[4] = -Mathf.PI + 0.05f; //left knee
-        motion.maxAngle[4] = -0.00f;
-        motion.minAngle[5] = -Mathf.PI * 0.5f + 0.05f; //right ankle
-        motion.maxAngle[5] = Mathf.PI * 0.5f;
-        motion.minAngle[6] = -Mathf.PI * 0.5f + 0.05f; //left ankle
-        motion.maxAngle[6] = Mathf.PI * 0.5f;
-
+        motion.minAngle[0] = Mathf.Deg2Rad * -90f; //torso
+        motion.maxAngle[0] = Mathf.Deg2Rad * 90f;
+        motion.minAngle[1] = Mathf.Deg2Rad * -75f; //right hip
+        motion.maxAngle[1] = Mathf.Deg2Rad * 75f;
+        motion.minAngle[2] = Mathf.Deg2Rad * -75f; //left hip
+        motion.maxAngle[2] = Mathf.Deg2Rad * 75f;
+        motion.minAngle[3] = Mathf.Deg2Rad * -165f; //right knee
+        motion.maxAngle[3] = Mathf.Deg2Rad * -5f;
+        motion.minAngle[4] = Mathf.Deg2Rad * -165f; //left knee
+        motion.maxAngle[4] = Mathf.Deg2Rad * -5f;
+        motion.minAngle[5] = Mathf.Deg2Rad * -85f; //right ankle
+        motion.maxAngle[5] = Mathf.Deg2Rad * 85f;
+        motion.minAngle[6] = Mathf.Deg2Rad * -85f; //left ankle
+        motion.maxAngle[6] = Mathf.Deg2Rad * 85f;
     }
 
 }

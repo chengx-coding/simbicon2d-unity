@@ -20,6 +20,8 @@ public class SimBiCon : MonoBehaviour
 
     public float kp;
     public float kd;
+    public float kp_limit;
+    public float kd_limit;
     public float kVirtualForce;
     //public float kpFoot = 30f;
     //public float kdFoot = 3f;
@@ -110,6 +112,10 @@ public class SimBiCon : MonoBehaviour
 
         kp = 1200f;
         kd = 120f;
+
+        kp_limit = 2000f;
+        kd_limit = 60f;
+
         kVirtualForce = 300;
         torqueLimit = 1000f * 2f;
         ankleLimit = torqueLimit;
@@ -119,7 +125,7 @@ public class SimBiCon : MonoBehaviour
         //kdFoot = 1f;
 
         externalForce = 150f;
-        verticalExternalForce = 750f;
+        verticalExternalForce = 900f;
         t0 = 330f;
         t1 = 250f;
         t2 = 200f;
@@ -183,10 +189,8 @@ public class SimBiCon : MonoBehaviour
 
         ComputeTorques();
 
-        for (int i = 0; i < 7; i++)
-        {
-            computedTorques[i] = torques[i];
-        }
+        // copy torque, only use for showing process
+        torques.CopyTo(computedTorques, 0);
 
         LimitTorques();
 
@@ -390,10 +394,7 @@ public class SimBiCon : MonoBehaviour
 
     void SetAngles()
     {
-        for (int i = 0; i < 7; i++)
-        {
-            lastAngles[i] = angles[i];
-        }
+        angles.CopyTo(lastAngles, 0);
         for (int i = 0; i <= 2; i++)
         {
             angles[i] = Deg2Rad(body[i].transform.eulerAngles.z);
@@ -569,7 +570,8 @@ public class SimBiCon : MonoBehaviour
         {
             if (angles[i] > currentMotion.maxAngle[i])
             {
-                torques[i] = PDControl(currentMotion.maxAngle[i], angles[i], angularVelocities[i]);
+                torques[i] = PDControl(currentMotion.maxAngle[i], kp_limit, kd_limit, angles[i], angularVelocities[i]);
+
                 //torques[i] = -torqueLimit;
                 //torques[i] = -ComputeConstrainedTorque(
                 //    body[i].GetComponent<Rigidbody2D>().mass,
@@ -581,14 +583,13 @@ public class SimBiCon : MonoBehaviour
             }
             else if (angles[i] < currentMotion.minAngle[i])
             {
-                torques[i] = PDControl(currentMotion.minAngle[i], angles[i], angularVelocities[i]);
+                torques[i] = PDControl(currentMotion.minAngle[i], kp_limit, kd_limit, angles[i], angularVelocities[i]);
                 //torques[i] = torqueLimit;
                 //torques[i] = -ComputeConstrainedTorque(
                 //    body[i].GetComponent<Rigidbody2D>().mass,
                 //    angularVelocities[i],
                 //    body[i].GetComponent<SpriteRenderer>().size.y,
                 //    Time.fixedDeltaTime);
-
             }
             torques[i] = BoundRange(torques[i], -torqueLimit, torqueLimit);
         }
@@ -751,36 +752,39 @@ public class SimBiCon : MonoBehaviour
             // position to apply external force
             Vector2 forceOrigin = pivot + body[0].GetComponent<SpriteRenderer>().size.y * direction;
 
-            arrow.SetActive(true);
-
             if (horizontalDir < 0)
             {
+                arrow.SetActive(true);
                 arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 180));
                 arrow.transform.position = forceOrigin;
                 body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(-externalForce, 0), forceOrigin);
             }
             else if (horizontalDir > 0)
             {
+                arrow.SetActive(true);
                 arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
                 arrow.transform.position = forceOrigin;
                 body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(externalForce, 0), forceOrigin);
             }
             if (verticalDir < 0)
             {
-                arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, -90));
-                arrow.transform.position = forceOrigin;
+                verticalArrow.SetActive(true);
+                verticalArrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, -90));
+                verticalArrow.transform.position = forceOrigin;
                 body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(0, -verticalExternalForce), forceOrigin);
             }
             else if (verticalDir > 0)
             {
-                arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
-                arrow.transform.position = forceOrigin + verticalArrow.GetComponent<SpriteRenderer>().size.x * Vector2.up;
+                verticalArrow.SetActive(true);
+                verticalArrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
+                verticalArrow.transform.position = forceOrigin + verticalArrow.GetComponent<SpriteRenderer>().size.x * Vector2.up;
                 body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(0, verticalExternalForce), forceOrigin);
             }
         }
         else
         {
             arrow.SetActive(false);
+            verticalArrow.SetActive(false);
         }
     }
 
