@@ -113,7 +113,7 @@ public class SimBiCon : MonoBehaviour
         kp = 1200f;
         kd = 120f;
 
-        kp_limit = 2000f;
+        kp_limit = 1600f;
         kd_limit = 60f;
 
         kVirtualForce = 300;
@@ -748,6 +748,8 @@ public class SimBiCon : MonoBehaviour
             verticalDir = -1;  // up
         }
 
+        arrow.SetActive(false);
+        verticalArrow.SetActive(false);
 
         if (horizontalDir != 0 || verticalDir != 0)
         {
@@ -763,6 +765,7 @@ public class SimBiCon : MonoBehaviour
 
             // position to apply external force
             Vector2 forceOrigin = pivot + body[0].GetComponent<SpriteRenderer>().size.y * direction;
+
 
             if (horizontalDir < 0)
             {
@@ -792,11 +795,6 @@ public class SimBiCon : MonoBehaviour
                 verticalArrow.transform.position = forceOrigin + verticalArrow.GetComponent<SpriteRenderer>().size.x * Vector2.up;
                 body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(0, verticalExternalForce), forceOrigin);
             }
-        }
-        else
-        {
-            arrow.SetActive(false);
-            verticalArrow.SetActive(false);
         }
     }
 
