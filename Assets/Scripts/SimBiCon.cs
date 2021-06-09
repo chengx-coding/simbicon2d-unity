@@ -515,7 +515,7 @@ public class SimBiCon : MonoBehaviour
         //Vector2 direction = new Vector2(-Mathf.Sin(angle), Mathf.Cos(angle));
         // direction in global
         Vector2 direction = RotateVector2(defaultDirection, angle);
-        direction.Normalize();
+        //direction.Normalize();
 
         // pivot in global
         Vector2 pivot = new Vector2(obj.transform.position.x, obj.transform.position.y);
@@ -529,11 +529,11 @@ public class SimBiCon : MonoBehaviour
         //direction2.Normalize();
         //Vector2 force2 = new Vector2(direction2.y, -direction2.x) * torque / forceArm;
 
-        obj.GetComponent<Rigidbody2D>().AddForceAtPosition(-force, pivot + direction * forceArm);
-        obj2.GetComponent<Rigidbody2D>().AddForceAtPosition(force, pivot + direction * forceArm);
+        obj.GetComponent<Rigidbody2D>().AddForceAtPosition(force * 0.5f, pivot + direction * forceArm);
+        obj2.GetComponent<Rigidbody2D>().AddForceAtPosition(force * -0.5f, pivot + direction * forceArm);
 
-        obj.GetComponent<Rigidbody2D>().AddForceAtPosition(force, pivot);
-        obj2.GetComponent<Rigidbody2D>().AddForceAtPosition(-force, pivot);
+        obj.GetComponent<Rigidbody2D>().AddForceAtPosition(force * -0.5f, pivot - direction * forceArm);
+        obj2.GetComponent<Rigidbody2D>().AddForceAtPosition(force * 0.5f, pivot - direction * forceArm);
 
     }
 
@@ -608,6 +608,18 @@ public class SimBiCon : MonoBehaviour
         {
             ApplyTorque(body[i], torques[i]);
         }
+
+        //for (int i = 0; i < 7; i++)
+        //{
+        //    if (i <= 2)
+        //    {
+        //        ApplyTorque(body[i], torques[i]);
+        //    }
+        //    else
+        //    {
+        //        ApplyInteractionTorque(body[i], body[i - 2], torques[i]);
+        //    }
+        //}
     }
 
     int CheckState()
