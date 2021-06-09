@@ -8,7 +8,7 @@ Use keyboard to control:
 Press "m" to switch motion
 Press "t" to manually switch state
 Press "v" to switch the ground between flat and varying terrain
-Press "f" and "g" to add external force
+Press arrow keys to add external force
 Press "r" to reset the character
 
 Press "1" and "2" to add torque to torso joint

@@ -63,13 +63,14 @@ public class SimBiCon : MonoBehaviour
     public GameObject p3;
     public GameObject p4;
     public GameObject stancePoint;
-    public GameObject arrow;
-    public GameObject[] ground = new GameObject[2];
-    public int currentGround;
+    public GameObject arrowPrefab;
+    private GameObject arrow;
+    private GameObject verticalArrow;
 
     public Text motionText;
 
     public float externalForce;
+    public float verticalExternalForce;
 
     public float t0;
     public float t1;
@@ -118,6 +119,7 @@ public class SimBiCon : MonoBehaviour
         //kdFoot = 1f;
 
         externalForce = 150f;
+        verticalExternalForce = 750f;
         t0 = 330f;
         t1 = 250f;
         t2 = 200f;
@@ -138,12 +140,10 @@ public class SimBiCon : MonoBehaviour
         motionText.text = "Current Motion: " + currentMotion.name;
 
         stancePoint = Instantiate(stancePoint, transform.position, Quaternion.identity);
-        arrow = Instantiate(arrow, transform.position, Quaternion.identity);
+        arrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
+        verticalArrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
         arrow.SetActive(false);
-        ground[0] = Instantiate(ground[0], transform.position, Quaternion.identity);
-        ground[1] = Instantiate(ground[1], transform.position, Quaternion.identity);
-        ground[currentGround].SetActive(true);
-        ground[1 - currentGround].SetActive(false);
+        verticalArrow.SetActive(false);
 
         //SetBody();
         //cameraFollow.GetComponent<CameraFollow>().target = body[0];
@@ -156,7 +156,6 @@ public class SimBiCon : MonoBehaviour
             Time.timeScale = 1;
         }
         SwitchMotion();
-        SwitchGround();
         ResetCharacter();
     }
 
@@ -324,18 +323,6 @@ public class SimBiCon : MonoBehaviour
 
         currentMotion = motionObj[currentMotionIndex].GetComponent<Motion>();
         state = currentMotion.state;
-    }
-
-    void SwitchGround()
-    {
-        if(Input.GetKeyDown("v"))
-        {
-            ground[currentGround].SetActive(false);
-            currentGround = 1 - currentGround;
-            ground[currentGround].SetActive(true);
-            body[0].transform.position = Vector3.zero;
-        }
-
     }
 
     void ResetCharacter()
@@ -729,7 +716,27 @@ public class SimBiCon : MonoBehaviour
 
     void ApplyExternalForce()
     {
-        if (Input.GetKey("f") || Input.GetKey("g"))
+        int horizontalDir = 0;
+        int verticalDir = 0;
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            horizontalDir = -1;  // left
+        }
+        else if (Input.GetKey(KeyCode.RightArrow))
+        {
+            horizontalDir = 1;  // right
+        }
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            verticalDir = 1;  // up
+        }
+        else if (Input.GetKey(KeyCode.DownArrow))
+        {
+            verticalDir = -1;  // up
+        }
+
+
+        if (horizontalDir != 0 || verticalDir != 0)
         {
             BodyPart bp = body[0].GetComponent<BodyPart>();
             Vector2 defaultDirection = bp.direction;
@@ -742,23 +749,34 @@ public class SimBiCon : MonoBehaviour
             Vector2 pivot = new Vector2(body[0].transform.position.x, body[0].transform.position.y);
 
             // position to apply external force
-            Vector2 pos = pivot + body[0].GetComponent<SpriteRenderer>().size.y * direction;
+            Vector2 forceOrigin = pivot + body[0].GetComponent<SpriteRenderer>().size.y * direction;
 
             arrow.SetActive(true);
 
-            if (Input.GetKey("g"))
-            {
-                arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
-                arrow.transform.position = pos;
-                body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(externalForce, 0), pos);
-            }
-            else
+            if (horizontalDir < 0)
             {
                 arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 180));
-                arrow.transform.position = pos;
-                body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(-externalForce, 0), pos);
+                arrow.transform.position = forceOrigin;
+                body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(-externalForce, 0), forceOrigin);
             }
-
+            else if (horizontalDir > 0)
+            {
+                arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+                arrow.transform.position = forceOrigin;
+                body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(externalForce, 0), forceOrigin);
+            }
+            if (verticalDir < 0)
+            {
+                arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, -90));
+                arrow.transform.position = forceOrigin;
+                body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(0, -verticalExternalForce), forceOrigin);
+            }
+            else if (verticalDir > 0)
+            {
+                arrow.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
+                arrow.transform.position = forceOrigin + verticalArrow.GetComponent<SpriteRenderer>().size.x * Vector2.up;
+                body[0].GetComponent<Rigidbody2D>().AddForceAtPosition(new Vector2(0, verticalExternalForce), forceOrigin);
+            }
         }
         else
         {
