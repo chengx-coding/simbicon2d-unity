@@ -17,6 +17,7 @@ public class SimBiCon : MonoBehaviour
     public bool virtualForceOn;
     public float vituralForce;
     public float smallContactDuration;
+    public float waitFootContactTimeout;
 
     public float kp;
     public float kd;
@@ -141,7 +142,21 @@ public class SimBiCon : MonoBehaviour
         if (stand) RotateJoints(state[0]);
 
         SetSwingStanceIndex(state[currentState].isRightStance);
-        comPos = body[torsoIndex].transform.position.x - body[stanceAnkleIndex].transform.position.x;
+
+        Vector3 centerOfMass = new Vector3();
+
+        float allMass = 0f;
+        for (int i = 0; i < 7; i++)
+        {
+            float partMass = body[i].GetComponent<Rigidbody2D>().mass;
+            centerOfMass += partMass * body[torsoIndex].transform.position;
+            allMass += partMass;
+        }
+        centerOfMass = centerOfMass / allMass;
+
+        //centerOfMass = body[torsoIndex].transform.position;
+
+        comPos = centerOfMass.x - body[stanceAnkleIndex].transform.position.x;
 
         motionText.text = "Current Motion: " + currentMotion.name;
 
@@ -624,69 +639,50 @@ public class SimBiCon : MonoBehaviour
 
     int CheckState()
     {
-        if (state[currentState].duration <= 0)
+        if (state[currentState].duration <= 0)  // means current state only check is foot contact
         {
             //currentElapsedTime = 0;
+            int currentCheckFootIndex;
             if (state[currentState].isRightStance)
             {
-                if (smallContact)
-                {
-                    if (body[lFootIndex].GetComponent<FootContact>().isContact)
-                    {
-                        if (AdvanceTime(smallContactDuration))
-                        {
-                            currentElapsedTime = 0;
-                            return (currentState + 1) % state.Length;
-                        }
-                    }
-                }
-                else
-                {
-                    if (body[lFootIndex].GetComponent<FootContact>().isFootContact)
-                    {
-                        currentElapsedTime = 0;
-                        return (currentState + 1) % state.Length;
-                    }
-
-                    if (AdvanceTime(smallContactDuration))
-                    {
-                        currentElapsedTime = 0;
-                        return (currentState + 1) % state.Length;
-                    }
-                }
-
+                currentCheckFootIndex = lFootIndex;
             }
             else
             {
-                if (smallContact)
-                {
-                    if (body[rFootIndex].GetComponent<FootContact>().isContact)
-                    {
-                        if (AdvanceTime(smallContactDuration))
-                        {
-                            currentElapsedTime = 0;
-                            return (currentState + 1) % state.Length;
-                        }
-                    }
-                }
-                else
-                {
-                    if (body[rFootIndex].GetComponent<FootContact>().isFootContact)
-                    {
-                        currentElapsedTime = 0;
-                        return (currentState + 1) % state.Length;
-                    }
+                currentCheckFootIndex = rFootIndex;
+            }
 
+            if (smallContact)
+            {
+                if (body[currentCheckFootIndex].GetComponent<FootContact>().isContact)
+                {
                     if (AdvanceTime(smallContactDuration))
                     {
                         currentElapsedTime = 0;
                         return (currentState + 1) % state.Length;
                     }
-
+                }
+            }
+            else
+            {
+                if (body[currentCheckFootIndex].GetComponent<FootContact>().isFootContact)
+                {
+                    currentElapsedTime = 0;
+                    return (currentState + 1) % state.Length;
                 }
 
+                //if (AdvanceTime(smallContactDuration))
+                //{
+                //    currentElapsedTime = 0;
+                //    return (currentState + 1) % state.Length;
+                //}
+
+                if (AdvanceTime(waitFootContactTimeout))
+                {
+                    currentElapsedTime = 0;
+                    return (currentState + 1) % state.Length;
+                }
             }
-            //return (currentState + 1) % state.Length;
         }
         else
         {
